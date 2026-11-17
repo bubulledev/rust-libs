@@ -1,0 +1,15 @@
+[package]
+name = "rustlib-jni"
+description = "Pont JNI entre un mod Fabric (JVM) et RustLib (Rust)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+name = "rustlib_jni"
+path = "src/lib.rs"
+
+[dependencies]
+rustlib-core = { workspace = true }
+jni = "0.21"

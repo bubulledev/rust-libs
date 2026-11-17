@@ -1,0 +1,108 @@
+plugins {
+    id 'fabric-loom' version "${loom_version}"
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+    archivesName = project.archives_base_name
+}
+
+// RustLib est une vraie dépendance, déclarée par coordonnée Maven
+// (dev.rustlib:rustlib:<version>) et non par un chemin de fichier : ./build-jar.sh
+// la publie dans dist/maven. Comme pour n'importe quelle bibliothèque Fabric,
+// Loom l'ajoute au classpath et l'imbrique dans le jar final (jar-in-jar).
+def rustlibArtifact = file(
+        "../dist/maven/dev/rustlib/rustlib/${project.rustlib_version}/" +
+        "rustlib-${project.rustlib_version}.jar")
+
+// Le natif du mod vient de la crate Rust examples/rustlib-mods.
+def workspaceDir = file('..')
+def modCrate = 'rustlib-mods'
+def modLibName = 'rustlib_mods'
+def osName = System.getProperty('os.name', '').toLowerCase()
+def nativeFileName = osName.contains('win') ? "${modLibName}.dll" :
+        osName.contains('mac') ? "lib${modLibName}.dylib" : "lib${modLibName}.so"
+def cargoNative = new File(workspaceDir, "target/release/${nativeFileName}")
+
+repositories {
+    mavenCentral()
+    maven {
+        name = 'rustlibLocal'
+        url = uri('../dist/maven')
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    // RustLib fournit dev.rustlib.RustLib. `modImplementation` le met au
+    // classpath (compilation + runtime de dev) et `include` demande à Loom de
+    // l'imbriquer sous META-INF/jars/ : l'utilisateur n'a rien à installer.
+    modImplementation include("dev.rustlib:rustlib:${project.rustlib_version}")
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
+    options.encoding = 'UTF-8'
+}
+
+// Vérifie la coordonnée avant toute résolution de dépendance : sans elle, Gradle
+// échouerait sur un « Could not find dev.rustlib:rustlib » peu parlant.
+tasks.register('verifyRustlibJar') {
+    group = 'rustlib'
+    description = 'Vérifie que dev.rustlib:rustlib:<version> est publiée dans dist/maven'
+    doLast {
+        if (!rustlibArtifact.isFile()) {
+            throw new GradleException(
+                    "${rustlibArtifact} absent : lancez ./build-jar.sh à la racine du dépôt.")
+        }
+    }
+}
+
+tasks.named('compileJava') { dependsOn 'verifyRustlibJar' }
+tasks.matching { it.name == 'runServer' || it.name == 'runClient' }.configureEach {
+    dependsOn 'verifyRustlibJar'
+}
+
+def cargoBuild = tasks.register('cargoBuild', Exec) {
+    group = 'rustlib'
+    description = 'Compile le natif du mod (cargo build --release -p rustlib-mods)'
+    workingDir = workspaceDir
+    commandLine 'cargo', 'build', '--release', '-p', modCrate
+    inputs.files(file('../Cargo.toml'), file('../Cargo.lock'))
+    inputs.dir(file('../crates'))
+    inputs.dir(file('../examples/rustlib-mods'))
+    outputs.file(cargoNative)
+}
+
+// Sync (et non Copy) : un renommage du natif ne doit pas laisser l'ancien
+// fichier dans les ressources du jar.
+def copyNative = tasks.register('copyNative', Sync) {
+    group = 'rustlib'
+    description = 'Place le natif sous native/ dans les ressources du jar'
+    dependsOn cargoBuild
+    from(cargoNative)
+    into layout.buildDirectory.dir('generated/native/native')
+}
+
+processResources {
+    dependsOn copyNative
+    from(copyNative) {
+        into 'native'
+    }
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand version: project.version
+    }
+}

@@ -1,0 +1,17 @@
+[package]
+name = "rustlib-mods"
+description = "Mod RustLib Mods : dépend de RustLib comme n'importe quel mod dépend d'une bibliothèque"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+name = "rustlib_mods"
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+# Dépendances externes, avec contrainte de version : le mod consomme RustLib
+# (`rustlib` = noyau, `rustlib_jni` = pont), il ne recopie pas son code.
+rustlib = { package = "rustlib-core", path = "../../crates/rustlib-core", version = "0.1.0" }
+rustlib-jni = { path = "../../crates/rustlib-jni", version = "0.1.0" }

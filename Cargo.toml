@@ -1,0 +1,18 @@
+[workspace]
+resolver = "2"
+members = ["crates/rustlib-core", "crates/rustlib-jni", "examples/rustlib-mods"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+license = "MIT OR Apache-2.0"
+
+[workspace.dependencies]
+rustlib-core = { path = "crates/rustlib-core" }
+rustlib-jni = { path = "crates/rustlib-jni" }
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+panic = "abort"

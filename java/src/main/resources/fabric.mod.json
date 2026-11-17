@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "id": "rustlib",
+  "version": "0.1.0",
+  "name": "RustLib",
+  "description": "Bibliothèque Rust pour mods Minecraft : registres, événements et ticks bornés hors de la JVM.",
+  "authors": [
+    "RustLib"
+  ],
+  "license": "MIT OR Apache-2.0",
+  "environment": "*"
+}

@@ -1,0 +1,12 @@
+{
+  "name": "rustlib-docs",
+  "private": true,
+  "type": "module",
+  "description": "Génération du site statique du wiki RustLib.",
+  "scripts": {
+    "build:wiki": "node tools/build-wiki.mjs"
+  },
+  "devDependencies": {
+    "marked": "^18.2.1"
+  }
+}

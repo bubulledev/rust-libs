@@ -1,0 +1,16 @@
+/target
+/dist
+/java/build
+**/*.rs.bk
+/node_modules
+# Distribution Gradle locale (téléchargée par la vérification hors ligne)
+/.tools
+# Sorties du projet de mod Fabric
+/fabric-mod/.gradle
+/fabric-mod/build
+/fabric-mod/run
+/fabric-mod/build.log
+
+# Marqueur local de l'éditeur et artefacts de conversation
+/.freebuff
+/threads

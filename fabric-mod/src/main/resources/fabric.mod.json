@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "id": "rustlib_mods",
+  "version": "${version}",
+  "name": "RustLib Mods",
+  "description": "Mod RustLib : blocs et items de cuivre dont la logique (registres, événements, ticks) vit en Rust.",
+  "authors": [
+    "RustLib"
+  ],
+  "contact": {},
+  "license": "MIT OR Apache-2.0",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "dev.rustlib.fabric.RustLibMods"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.16.0",
+    "fabric-api": "*",
+    "minecraft": "~1.21",
+    "java": ">=21",
+    "rustlib": ">=0.1.0"
+  }
+}

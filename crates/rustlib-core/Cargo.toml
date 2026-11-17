@@ -1,0 +1,11 @@
+[package]
+name = "rustlib-core"
+description = "Noyau de RustLib : registres, événements et ordonnanceur pour écrire des mods Minecraft en Rust"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+
+[lib]
+name = "rustlib"
+path = "src/lib.rs"
